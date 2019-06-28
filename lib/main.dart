@@ -20,6 +20,8 @@ class _HomeState extends State<Home> {
   final toDoController = TextEditingController();
 
   List toDoList = [];
+  Map<String, dynamic> lastRemoved;
+  int lastRemovePos;
 
 
   @override
@@ -80,26 +82,60 @@ class _HomeState extends State<Home> {
             child: ListView.builder(
                 padding: EdgeInsets.only(top: 10.0),
                 itemCount: toDoList.length,
-                itemBuilder: (context, index){
-                  return CheckboxListTile(
-                    title: Text(toDoList[index]["title"]),
-                    value: toDoList[index]["ok"],
-                    secondary: CircleAvatar(
-                      child: Icon(toDoList[index]["ok"]?
-                      Icons.check : Icons.error),
-                    ),
-                    onChanged: (c){
-                      setState(() {
-                        toDoList[index]["ok"] = c;
-                        saveData();
-                      });
-                    },
-                  );
-                  },
+                itemBuilder: buildItem
           ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget buildItem (context, index){
+    return Dismissible(
+      key: Key(DateTime.now().millisecondsSinceEpoch.toString()),
+      background: Container(
+        color: Colors.red,
+        child: Align(
+          alignment: Alignment(-0.9, 0.0),
+          child: Icon(Icons.delete, color: Colors.white,),
+        ),
+      ),
+      direction: DismissDirection.startToEnd,
+      child: CheckboxListTile(
+        title: Text(toDoList[index]["title"]),
+        value: toDoList[index]["ok"],
+        secondary: CircleAvatar(
+          child: Icon(toDoList[index]["ok"]?
+          Icons.check : Icons.error),
+        ),
+        onChanged: (c){
+          setState(() {
+            toDoList[index]["ok"] = c;
+            saveData();
+          });
+        },
+      ),
+      onDismissed: (direction) {
+        setState(() {
+          lastRemoved = Map.from(toDoList[index]);
+          lastRemovePos = index;
+          toDoList.removeAt(index);
+
+          saveData();
+
+          final snack = SnackBar(
+            content: Text("Tarefa \"${lastRemoved["title"]}\" removida!"),
+            action: SnackBarAction(label: "Desfazer", onPressed: () {
+              setState(() {
+                toDoList.insert(lastRemovePos, lastRemoved);
+                saveData();
+              });
+            }),
+            duration: Duration(seconds: 3),
+          );
+          Scaffold.of(context).showSnackBar(snack);
+        });
+      },
     );
   }
 
