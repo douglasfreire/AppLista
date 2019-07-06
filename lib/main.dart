@@ -86,10 +86,12 @@ class _HomeState extends State<Home> {
                 ),
                 RaisedButton(
                   color: Colors.black54,
-                  child: Text("Add"),
+                  child: Text("Adicionar"),
                   textColor: Colors.white,
                   onPressed: () {
-                    if (toDoController.text.isEmpty) {
+                    if (toDoController.text.isNotEmpty) {
+                      return addToDo();
+                    } else {
                       showDialog(
                           context: context,
                           builder: (BuildContext context) {
@@ -106,8 +108,6 @@ class _HomeState extends State<Home> {
                               ],
                             );
                           });
-                    }else {
-                      return addToDo;
                     }
                   },
                 ),
